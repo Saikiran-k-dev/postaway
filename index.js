@@ -16,6 +16,7 @@ app.use(express.json());
 
 app.use("/api/users",userRouter)
 app.use("/api/posts",jwtAuth,postRouter)
+app.use("/api/comments",jwtAuth,postRouter)
 
 app.use((err,req,res,next)=>{
     logger.error(err.message)

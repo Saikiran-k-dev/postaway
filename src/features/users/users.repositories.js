@@ -19,5 +19,27 @@ export default class UserRepositories{
             console.log(error)
         }
     }
+    async getOneUser(userId){
+        try {
+            // console.log(user)
+            const userDetaail =  await UserModel.findById(userId)
+            userDetaail.password = "ahhhh no password will be displayed"
+            return userDetaail
+        } catch (error) {
+            console.log(error)
+        }
+    }
+
+    async getAllUsers(){
+        try {
+            const userDetails = await UserModel.find()
+            for (let userDetail of userDetails) {
+                userDetail.password = "ahh no password for u";
+            }
+            return userDetails
+        } catch (error) {
+            console.log(error)
+        }
+    }
     
 }

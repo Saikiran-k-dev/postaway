@@ -1,8 +1,10 @@
 import mongoose from "mongoose";
 import {ObjectId} from "mongodb"
 import { postSchema } from "./posts.schema.js";
+import { userSchema } from "../users/users.schema.js";
 
 const PostModel = new mongoose.model('post',postSchema)
+const UserModel = new mongoose.model("user",userSchema)
 
 export default class PostRepositories{
     async getAllPosts(){
@@ -12,16 +14,16 @@ export default class PostRepositories{
             console.log(error)
         }
     }
-    async getOnePost(req,res){
+    async getOnePost(postId){
         try {
-             
+             return await PostModel.findOne({_id:new ObjectId(postId)})
         } catch (error) {
             console.log(error)
         }
     }
-    async getUserPost(req,res){
+    async getUserPost(userId){
         try {
-            
+            return await PostModel.find({userId:new ObjectId(userId)})
         } catch (error) {
             console.log(error)
         }
@@ -36,6 +38,10 @@ export default class PostRepositories{
                 comments:data.comments
             })
             await postData.save()
+            const updateUserData = await UserModel.findOne({_id: new ObjectId(userId)})
+            // console.log(updateUserData)
+            updateUserData.posts.push(new ObjectId(postData._id))
+            updateUserData.save()
             return postData
         } catch (error) {
             console.log(error)
@@ -43,10 +49,12 @@ export default class PostRepositories{
     }
     async deletePost(userId,postId){
         try {
-            console.log(userId,postId)
             const isvalidPost = await PostModel.findOne({_id:new ObjectId(postId),userId: new ObjectId(userId)})
             if(isvalidPost){
                 await PostModel.deleteOne({_id:new ObjectId(postId),userId: new ObjectId(userId)})
+                const updateUserData = await UserModel.findOne({_id: new ObjectId(userId)})
+                updateUserData.posts.pull(new ObjectId(isvalidPost._id))
+                updateUserData.save()
                 return isvalidPost
             } else {
                 return "Post doesnt exist"
@@ -55,9 +63,14 @@ export default class PostRepositories{
             console.log(error)
         }
     }
-    async updatePost(req,res){
+    async updatePost(userId,postId,updatedData){
         try {
-            
+            const isvalidPost = await PostModel.findOne({_id:new ObjectId(postId),userId: new ObjectId(userId)})
+            if(isvalidPost){
+                isvalidPost.content = updatedData.content
+                isvalidPost.image = updatedData.image
+                return await isvalidPost.save()
+            }
         } catch (error) {
             console.log(error)
         }
